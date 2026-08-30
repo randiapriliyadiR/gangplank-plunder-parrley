@@ -3,30 +3,30 @@
                    {
                        "id":  35,
                        "side":  "sell",
-                       "volume":  0.59,
-                       "openTime":  "2022.05.02 12:51:40",
-                       "closeTime":  "2022.05.03 07:13:40",
-                       "openPrice":  1864.04,
-                       "closePrice":  1853.83,
-                       "profit":  599.68,
-                       "balance":  100904.31,
+                       "volume":  0.58,
+                       "openTime":  "2022.05.02 12:51:29",
+                       "closeTime":  "2022.05.03 07:13:50",
+                       "openPrice":  1863.853,
+                       "closePrice":  1853.816,
+                       "profit":  579.75,
+                       "balance":  100759.44,
                        "comment":  "GPP|S1",
                        "commission":  0,
-                       "swap":  -2.71
+                       "swap":  -2.4
                    },
                    {
                        "id":  37,
                        "side":  "buy",
                        "volume":  0.48,
-                       "openTime":  "2022.05.03 14:23:20",
-                       "closeTime":  "2022.05.04 23:49:40",
-                       "openPrice":  1873.57,
-                       "closePrice":  1890.15,
-                       "profit":  789.79,
-                       "balance":  101694.1,
+                       "openTime":  "2022.05.03 14:19:58",
+                       "closeTime":  "2022.05.04 23:49:10",
+                       "openPrice":  1873.577,
+                       "closePrice":  1890.177,
+                       "profit":  792.57,
+                       "balance":  101552.01,
                        "comment":  "GPP|B1",
                        "commission":  0,
-                       "swap":  -6.05
+                       "swap":  -4.23
                    }
                ]
 }

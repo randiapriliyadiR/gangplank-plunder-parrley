@@ -1,8 +1,8 @@
 ; Gangplank Plunder Parrrley — H4 Prop Firm PASS preset
 ; Symbol: XAUUSD_ExnessPro | H4 box breakout | Fixed SL
 ; Challenge: daily DD 3% (day-start equity) / max DD 10% (start equity) / target +10%
-; Lab stand = full curve (prop off). This .set = strict challenge: HaltOnTarget=true
-; Verified challenge PASS: 2023.03.13 eq ~$110,068 | risk 1% | Model 1 OHLC
+; Lab stand = full curve Model 4 real ticks (prop off). This .set = strict challenge: HaltOnTarget=true
+; Challenge PASS (OHLC): 2023.03.13 eq ~$110,068 | risk 1%
 ; Daily/max DD halt if breached
 InpSymbol=XAUUSD||XAUUSD||0||N||N
 InpTemplateTF=16388||16388||0||N||N
