@@ -178,7 +178,7 @@ void GppSizeSlots(const SGppCfg &cfg, SGppPlan &plan)
    const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
    for(int i = 0; i < plan.count; i++)
      {
-      double lots = GppLotsForRisk(cfg.symbol, equity, cfg.riskPct,
+      double lots = GppLotsForRisk(cfg.symbol, equity, GppActiveRiskPct(cfg),
                                    plan.slots[i].entry, plan.slots[i].sl);
       if(plan.slots[i].ladder > 1 && cfg.lotDecay > 0.0)
          lots = GppNormalizeLots(cfg.symbol,

@@ -33,28 +33,56 @@
                        "side":  "buy",
                        "volume":  1.72,
                        "openTime":  "2023.03.13 00:00:00",
-                       "closeTime":  "2023.03.15 11:33:46",
+                       "closeTime":  "2023.03.14 12:30:04",
                        "openPrice":  1877.878,
-                       "closePrice":  1918.502,
-                       "profit":  6935.31,
-                       "balance":  109753.84,
+                       "closePrice":  1899.36,
+                       "profit":  249.01,
+                       "balance":  103067.54,
                        "comment":  "GPP|B1",
                        "commission":  0,
-                       "swap":  -52.02
+                       "swap":  -4.99
                    },
                    {
                        "id":  57,
                        "side":  "buy",
                        "volume":  0.33,
                        "openTime":  "2023.03.13 09:36:00",
-                       "closeTime":  "2023.03.15 11:33:46",
+                       "closeTime":  "2023.03.14 12:30:04",
                        "openPrice":  1891.663,
-                       "closePrice":  1918.502,
-                       "profit":  875.71,
-                       "balance":  110629.55,
+                       "closePrice":  1899.36,
+                       "profit":  3668.89,
+                       "balance":  106736.43,
                        "comment":  "GPP|B2",
                        "commission":  0,
-                       "swap":  -9.98
+                       "swap":  -26.01
+                   },
+                   {
+                       "id":  59,
+                       "side":  "sell",
+                       "volume":  0.28,
+                       "openTime":  "2023.03.15 06:22:38",
+                       "closeTime":  "2023.03.15 16:40:13",
+                       "openPrice":  1898.684,
+                       "closePrice":  1936.548,
+                       "profit":  -1060.19,
+                       "balance":  105676.24,
+                       "comment":  "GPP|S1",
+                       "commission":  0,
+                       "swap":  0
+                   },
+                   {
+                       "id":  61,
+                       "side":  "sell",
+                       "volume":  0.39,
+                       "openTime":  "2023.03.15 18:32:14",
+                       "closeTime":  "2023.03.17 11:25:15",
+                       "openPrice":  1909.373,
+                       "closePrice":  1936.427,
+                       "profit":  -1064.08,
+                       "balance":  104612.16,
+                       "comment":  "GPP|S1",
+                       "commission":  0,
+                       "swap":  -8.97
                    }
                ]
 }

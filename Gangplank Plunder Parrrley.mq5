@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Randi Apriliyadi"
 #property link      "https://github.com/randiapriliyadiR"
-#property version   "1.13"
+#property version   "1.14"
 #property strict
 #property description "Gangplank Plunder Parrrley — H4 box breakout + prop challenge"
 
@@ -58,6 +58,8 @@ input bool            InpPropHaltOnTarget  = false;      // false=log PASS then 
 input double          InpPropDailyDdPct    = 3.0;        // Daily DD % from day-start equity
 input double          InpPropMaxDdPct      = 10.0;       // Max DD % from challenge-start equity
 input double          InpPropTargetPct     = 10.0;       // Profit target % from start equity
+input double          InpPropRiskAfterPass = 0.35;       // Risk % after +target (phase 2)
+input double          InpPropDailyBufferPct = 0.75;      // Flatten+pause if daily room < this %
 
 SGppCfg      g_cfg;
 SGppTemplate g_tpl;
@@ -112,6 +114,8 @@ bool GppFillCfg(SGppCfg &c)
    c.propDailyDdPct    = InpPropDailyDdPct;
    c.propMaxDdPct      = InpPropMaxDdPct;
    c.propTargetPct     = InpPropTargetPct;
+   c.propRiskAfterPass = InpPropRiskAfterPass;
+   c.propDailyBufferPct = InpPropDailyBufferPct;
    GppSetSeasonMonths(c, InpSeasonMonths);
    return (c.pivotBars >= 1 && c.lookback >= 30 && c.maxLadder >= 1
            && c.nearLevels >= 1 && c.riskPct > 0.0);
@@ -236,7 +240,12 @@ void GppRefreshView(void)
    if(!g_prop.enabled)
       g_view.propStatus = "prop OFF";
    else if(g_prop.targetLogged && g_prop.state == GPP_PROP_RUNNING)
-      g_view.propStatus = "PASSED target (still trading) | " + g_prop.eventNote;
+      g_view.propStatus = StringFormat("PASSED | risk %.2f%%%s | %s",
+                                       GppActiveRiskPct(g_cfg),
+                                       (g_prop.entriesPaused ? " | daily buffer pause" : ""),
+                                       g_prop.eventNote);
+   else if(g_prop.entriesPaused && g_prop.state == GPP_PROP_RUNNING)
+      g_view.propStatus = "RUNNING | daily buffer pause";
    else
       g_view.propStatus = GppPropStateName(g_prop.state) +
                           (g_prop.eventNote != "" ? (" | " + g_prop.eventNote) : "");
@@ -278,7 +287,8 @@ int OnInit()
    g_view.reason = "init";
    g_lastD1 = 0;
    GppPropInit(g_cfg.propChallenge, g_cfg.propDailyDdPct,
-               g_cfg.propMaxDdPct, g_cfg.propTargetPct, g_cfg.propHaltOnTarget);
+               g_cfg.propMaxDdPct, g_cfg.propTargetPct, g_cfg.propHaltOnTarget,
+               g_cfg.propRiskAfterPass, g_cfg.propDailyBufferPct);
    EventSetTimer(1);
    GppRebuild();
    GppRefreshView();
@@ -325,6 +335,28 @@ void OnTick()
         {
          g_lastUiSec = secHalt;
          g_view.reason = GppPropStateName(g_prop.state);
+         if(!MQLInfoInteger(MQL_TESTER) || MQLInfoInteger(MQL_VISUAL_MODE))
+           {
+            GppRefreshView();
+            GppPanelUpdate(g_cfg, g_tpl, g_plan, g_view);
+           }
+        }
+      return;
+     }
+
+   // Near daily DD floor: no new entries; keep managing open risk.
+   if(!GppPropAllowNewEntries())
+     {
+      if(GppCountPendings(_Symbol, g_cfg.magic) > 0)
+         GppCancelAllPendings(g_cfg);
+      if(GppCountPositions(_Symbol, g_cfg.magic) > 0)
+         GppManageOpen(g_cfg, g_plan);
+      GppPropOnTick(g_cfg);
+      const datetime secPause = TimeCurrent();
+      if(secPause != g_lastUiSec)
+        {
+         g_lastUiSec = secPause;
+         g_view.reason = "daily buffer pause";
          if(!MQLInfoInteger(MQL_TESTER) || MQLInfoInteger(MQL_VISUAL_MODE))
            {
             GppRefreshView();

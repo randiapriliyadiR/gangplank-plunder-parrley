@@ -15,12 +15,12 @@ Interactive backtest explorer on **Exness Pro** ticks (`XAUUSD_ExnessPro`). Lab 
 
 | Stand | Mode | Net | PF | Equity DD | WR | Trades |
 |---|---|---:|---:|---:|---:|---:|
-| **Prop H4 full** | H4 risk 1%, real ticks | **+$12,320** | **1.77** | **5.7%** | 54% | **35** |
+| **Prop H4** | Prop ON, 1%→0.35%, real ticks | **+$6,131** | **1.42** | **5.7%** | 53% | **32** |
 | Fixed D1 | Full run, no prop halt | +$160,732 | 2.91 | 27.1% | 71% | 14 |
 | BEP D1 | Break-even on next rung | +$126,320 | 2.67 | 36.0% | 62% | 13 |
 | Trail D1 | Trail to next rung SL | +$122,359 | 2.57 | 37.2% | 62% | 13 |
 
-Lab **Prop** stand is the **full H4 risk-1% curve on Every tick based on real ticks** (HQ 99%). On a strict challenge run (OHLC), **+10% first hit 2023.03.13** (~$110,068). Empty months = no filled breakout that month. Preset: [`Presets/GPP_XAU_H4_PropPass.set`](Presets/GPP_XAU_H4_PropPass.set).
+Lab **Prop** = Model 4 **prop rules ON** full curve: phase-2 risk after +target, daily buffer flatten (0.75%), no daily/max FAIL in sample. Peak ~+9.3% before buffer on real ticks; classic **+10% PASS** still shown on OHLC halt preset. Preset: [`Presets/GPP_XAU_H4_PropPass.set`](Presets/GPP_XAU_H4_PropPass.set).
 
 ## What it is
 
@@ -38,9 +38,11 @@ Default template: **H4** (best equity stand). Optional **prop challenge**: race 
 | Budget | 15% |
 | Daily DD | **3%** from day-start equity |
 | Max DD | **10%** from challenge-start equity |
-| Target | **+10%** then halt |
+| Target | **+10%** (phase-2 risk after hit if HaltOnTarget=false) |
+| After PASS risk | **0.35%** |
+| Daily buffer | **0.75%** room → flatten + pause (1× dayStart roll) |
 | SL mode | Fixed |
-| Verified | **PASS** 2023.03.13 → eq ≈ $110,068 |
+| Verified | Model 4 full prop ON: **no FAIL**; OHLC halt PASS 2023.03.13 |
 
 Load: attach EA → Inputs → **Load** → pick the `.set`.
 
@@ -62,7 +64,7 @@ Load: attach EA → Inputs → **Load** → pick the `.set`.
 
 ## Disclaimer
 
-Past backtests are not a promise of future profit. Lab Prop H4 uses **Every tick based on real ticks** (imported Exness Pro). Use money you can afford to risk. This is research software, not financial advice.
+Past backtests are not a promise of future profit. Lab Prop H4 uses **Every tick based on real ticks** with prop guards. Use money you can afford to risk. This is research software, not financial advice.
 
 ## Author
 

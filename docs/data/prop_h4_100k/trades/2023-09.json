@@ -1,46 +1,18 @@
 {
     "trades":  [
                    {
-                       "id":  61,
-                       "side":  "buy",
-                       "volume":  0.74,
-                       "openTime":  "2023.08.28 15:37:48",
-                       "closeTime":  "2023.09.01 12:30:21",
-                       "openPrice":  1923.75,
-                       "closePrice":  1950.989,
-                       "profit":  1950.43,
-                       "balance":  111448.42,
-                       "comment":  "GPP|B1",
-                       "commission":  0,
-                       "swap":  -65.26
-                   },
-                   {
                        "id":  63,
                        "side":  "sell",
-                       "volume":  1.21,
-                       "openTime":  "2023.09.01 14:00:31",
-                       "closeTime":  "2023.09.05 09:23:10",
-                       "openPrice":  1938.685,
-                       "closePrice":  1932.217,
-                       "profit":  769.83,
-                       "balance":  112218.25,
+                       "volume":  0.31,
+                       "openTime":  "2023.09.27 14:59:41",
+                       "closeTime":  "2023.09.28 12:46:05",
+                       "openPrice":  1883.704,
+                       "closePrice":  1872.175,
+                       "profit":  354.83,
+                       "balance":  104966.99,
                        "comment":  "GPP|S1",
                        "commission":  0,
-                       "swap":  -12.8
-                   },
-                   {
-                       "id":  65,
-                       "side":  "buy",
-                       "volume":  1.08,
-                       "openTime":  "2023.09.20 13:45:22",
-                       "closeTime":  "2023.09.20 20:08:06",
-                       "openPrice":  1941.937,
-                       "closePrice":  1931.516,
-                       "profit":  -1125.47,
-                       "balance":  111092.78,
-                       "comment":  "GPP|B1",
-                       "commission":  0,
-                       "swap":  0
+                       "swap":  -2.57
                    }
                ]
 }

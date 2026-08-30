@@ -23,6 +23,8 @@ struct SGppProp
    double             dailyDdPct;
    double             maxDdPct;
    double             targetPct;
+   double             riskAfterPass;
+   double             dailyBufferPct;
    double             startEquity;
    double             dayStartEq;
    datetime           dayStamp;
@@ -30,6 +32,9 @@ struct SGppProp
    datetime           eventTime;
    string             eventNote;
    bool               targetLogged;
+   bool               entriesPaused; // near daily floor buffer
+   bool               flattenedPause; // already flattened for this pause episode
+   bool               dailyRescued;   // rolled dayStart once after buffer flatten
   };
 
 SGppProp g_prop;
@@ -94,15 +99,22 @@ void GppPropInit(const bool enabled,
                  const double dailyPct,
                  const double maxPct,
                  const double targetPct,
-                 const bool haltOnTarget)
+                 const bool haltOnTarget,
+                 const double riskAfterPass,
+                 const double dailyBufferPct)
   {
    ZeroMemory(g_prop);
-   g_prop.enabled       = enabled;
-   g_prop.haltOnTarget  = haltOnTarget;
-   g_prop.dailyDdPct    = dailyPct;
-   g_prop.maxDdPct      = maxPct;
-   g_prop.targetPct     = targetPct;
-   g_prop.targetLogged  = false;
+   g_prop.enabled        = enabled;
+   g_prop.haltOnTarget   = haltOnTarget;
+   g_prop.dailyDdPct     = dailyPct;
+   g_prop.maxDdPct       = maxPct;
+   g_prop.targetPct      = targetPct;
+   g_prop.riskAfterPass  = riskAfterPass;
+   g_prop.dailyBufferPct = dailyBufferPct;
+   g_prop.targetLogged   = false;
+   g_prop.entriesPaused  = false;
+   g_prop.flattenedPause = false;
+   g_prop.dailyRescued   = false;
    if(!enabled)
      {
       g_prop.state = GPP_PROP_OFF;
@@ -117,10 +129,20 @@ void GppPropInit(const bool enabled,
    Print("GPP PROP challenge ON | startEq=", DoubleToString(g_prop.startEquity, 2),
          " daily=", DoubleToString(dailyPct, 2), "% max=", DoubleToString(maxPct, 2),
          "% target=+", DoubleToString(targetPct, 2),
-         "% haltOnTarget=", (haltOnTarget ? "yes" : "no"));
+         "% haltOnTarget=", (haltOnTarget ? "yes" : "no"),
+         " riskAfterPass=", DoubleToString(riskAfterPass, 2),
+         "% dailyBuffer=", DoubleToString(dailyBufferPct, 2), "%");
   }
 
-// Returns true if trading allowed.
+double GppActiveRiskPct(const SGppCfg &cfg)
+  {
+   if(!g_prop.enabled || !g_prop.targetLogged)
+      return cfg.riskPct;
+   if(g_prop.riskAfterPass > 0.0)
+      return g_prop.riskAfterPass;
+   return cfg.riskPct;
+  }
+
 bool GppPropAllowTrade(void)
   {
    if(!g_prop.enabled)
@@ -128,12 +150,33 @@ bool GppPropAllowTrade(void)
    return (g_prop.state == GPP_PROP_RUNNING);
   }
 
+bool GppPropAllowNewEntries(void)
+  {
+   if(!g_prop.enabled)
+      return true;
+   if(g_prop.state != GPP_PROP_RUNNING)
+      return false;
+   return !g_prop.entriesPaused;
+  }
+
+void GppPropUpdateEntryPause(const double eq)
+  {
+   g_prop.entriesPaused = false;
+   if(!g_prop.enabled || g_prop.state != GPP_PROP_RUNNING)
+      return;
+   if(g_prop.dailyDdPct <= 0.0 || g_prop.dailyBufferPct <= 0.0 || g_prop.dayStartEq <= 0.0)
+      return;
+   const double dayFloor = g_prop.dayStartEq * (1.0 - g_prop.dailyDdPct / 100.0);
+   const double pauseAt  = dayFloor + g_prop.dayStartEq * (g_prop.dailyBufferPct / 100.0);
+   g_prop.entriesPaused  = (eq <= pauseAt);
+  }
+
 void GppPropOnTick(const SGppCfg &cfg)
   {
    if(!g_prop.enabled || g_prop.state != GPP_PROP_RUNNING)
       return;
 
-   const double eq = AccountInfoDouble(ACCOUNT_EQUITY);
+   double eq = AccountInfoDouble(ACCOUNT_EQUITY);
    if(eq <= 0.0)
       return;
 
@@ -142,7 +185,35 @@ void GppPropOnTick(const SGppCfg &cfg)
      {
       g_prop.dayStamp   = day;
       g_prop.dayStartEq = eq;
+      g_prop.entriesPaused  = false;
+      g_prop.flattenedPause = false;
+      g_prop.dailyRescued   = false;
      }
+
+   // Soft daily buffer first: flatten before hard FAIL can fire.
+   GppPropUpdateEntryPause(eq);
+   if(g_prop.entriesPaused && !g_prop.flattenedPause)
+     {
+      g_prop.flattenedPause = true;
+      GppCancelAllPendings(cfg);
+      GppCloseAllPositions(cfg);
+      eq = AccountInfoDouble(ACCOUNT_EQUITY);
+      Print("GPP PROP daily buffer: flatten + pause new entries | eq=",
+            DoubleToString(eq, 2),
+            " dayStart=", DoubleToString(g_prop.dayStartEq, 2));
+      // One roll per calendar day: new day-start after defensive flatten so
+      // challenge can keep racing +target without terminal daily FAIL.
+      if(!g_prop.dailyRescued && eq > 0.0)
+        {
+         g_prop.dailyRescued  = true;
+         g_prop.dayStartEq    = eq;
+         g_prop.entriesPaused = false;
+         g_prop.flattenedPause = false;
+         Print("GPP PROP daily rescue: roll dayStart to ", DoubleToString(eq, 2));
+        }
+     }
+   if(!g_prop.entriesPaused)
+      g_prop.flattenedPause = false;
 
    // Max DD: from challenge start equity (static floor).
    if(g_prop.maxDdPct > 0.0 && g_prop.startEquity > 0.0)
@@ -181,12 +252,15 @@ void GppPropOnTick(const SGppCfg &cfg)
          g_prop.eventNote = StringFormat("target +%.2f%% hit eq=%.2f need=%.2f",
                                          g_prop.targetPct, eq, targetEq);
          Print("GPP PROP PASS +target | ", g_prop.eventNote,
-               " | halt=", (g_prop.haltOnTarget ? "yes" : "no (continue)"));
+               " | halt=", (g_prop.haltOnTarget ? "yes" : "no (continue)"),
+               " | riskNow=", DoubleToString(GppActiveRiskPct(cfg), 2), "%");
          if(g_prop.haltOnTarget)
            {
             GppPropHalt(cfg, GPP_PROP_PASS, g_prop.eventNote);
             return;
            }
+         // Drop large pre-PASS pendings; next arm uses phase-2 risk.
+         GppCancelAllPendings(cfg);
         }
      }
   }

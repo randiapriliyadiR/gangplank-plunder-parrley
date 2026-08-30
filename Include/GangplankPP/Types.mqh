@@ -52,7 +52,13 @@ struct SGppCfg
    double            propDailyDdPct;
    double            propMaxDdPct;
    double            propTargetPct;
+   double            propRiskAfterPass;   // risk % after +target (phase 2)
+   double            propDailyBufferPct;  // pause new entries when daily room left < this
   };
+
+// Implemented in PropFirm.mqh (same compilation unit).
+double GppActiveRiskPct(const SGppCfg &cfg);
+bool   GppPropAllowNewEntries(void);
 
 struct SGppSwing
   {
@@ -160,6 +166,8 @@ void GppCfgInit(SGppCfg &c)
    c.propDailyDdPct    = 3.0;
    c.propMaxDdPct      = 10.0;
    c.propTargetPct     = 10.0;
+   c.propRiskAfterPass = 0.35;
+   c.propDailyBufferPct = 0.75;
   }
 
 int GppParseMonths(const string src, int &months[])
