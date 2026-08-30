@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gangplank Plunder Parrrley - Backtest Lab</title>
+  <meta name="description" content="Independent backtest lab for Gangplank Plunder Parrrley — Major Trend S/R ladders on Exness real ticks." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20260830g" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+  <script src="portfolio.js?v=20260830g" defer></script>
+  <script src="app.js?v=20260830g" defer></script>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-bg" style="background-image:url('assets/gangplank.jpg')"></div>
+    <div class="hero-veil"></div>
+    <div class="hero-inner">
+      <p class="hero-kicker">Backtest lab &middot; v<span id="ver">1.06</span></p>
+      <h1>Gangplank Plunder Parrrley</h1>
+      <p class="hero-lead">Break the barrels. Major Trend ladders on D1 gold — Fixed SL still rules the powder magazine.</p>
+      <div class="hero-actions">
+        <a class="btn" href="https://github.com/randiapriliyadiR/gangplank-plunder-parrley">Source on GitHub</a>
+        <a class="btn btn-ghost" href="#overview">Jump to best stand</a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <a href="#overview">Overview</a>
+    <a href="#chart">Balance</a>
+    <a href="#calendar">Calendar</a>
+  </nav>
+
+  <main class="wrap">
+    <div class="lab-bar">
+      <p class="lab-bar-label">SL mode</p>
+      <div class="seg" id="tf-seg" role="tablist">
+        <button type="button" class="seg-btn active" data-stand="fixed_100k">Fixed</button>
+        <button type="button" class="seg-btn" data-stand="bep_100k">BEP</button>
+        <button type="button" class="seg-btn" data-stand="trail_100k">Trail</button>
+      </div>
+      <p class="lab-bar-label lab-bar-pairs-label" hidden>Pairs</p>
+      <div class="seg pair-seg" id="pair-seg" role="group" aria-label="Pair toggles" hidden></div>
+    </div>
+
+    <section id="overview" class="block">
+      <h2>Overview</h2>
+      <p class="deck" id="stand-meta"></p>
+      <dl class="stat-list" id="overview-stats"></dl>
+      <div class="extreme-grid" id="overview-extremes"></div>
+    </section>
+
+    <section id="chart" class="block">
+      <h2>Balance</h2>
+      <p class="deck" id="chart-note">Calendar-timed equity curve.</p>
+      <div class="chart-box chart-box-tall"><canvas id="chart-balance"></canvas></div>
+    </section>
+
+    <section id="calendar" class="block">
+      <h2>Calendar</h2>
+      <p class="deck">Rows = years, columns = Jan–Dec. Empty months = $0 / 0 trades. Green = profit, red = loss. Click a month for trade history.</p>
+      <div class="cal-nav">
+        <button type="button" id="cal-prev" aria-label="Previous month">&lsaquo;</button>
+        <p id="cal-label"></p>
+        <button type="button" id="cal-next" aria-label="Next month">&rsaquo;</button>
+      </div>
+      <div class="cal-scroll">
+        <div class="cal-grid" id="cal-grid" role="grid" aria-label="Monthly P/L by year"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="history-modal" class="modal" hidden aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
+      <header class="modal-head">
+        <h2 id="history-modal-title">Trade history</h2>
+        <button type="button" class="modal-close" data-close-modal aria-label="Close">&times;</button>
+      </header>
+      <div class="history-layout">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Close</th><th>Side</th><th>Lots</th><th>P/L</th><th>Balance</th>
+              </tr>
+            </thead>
+            <tbody id="trade-list"></tbody>
+          </table>
+        </div>
+        <aside class="trade-detail" id="trade-detail">
+          <p class="mute">Select a trade</p>
+        </aside>
+      </div>
+      <div class="pager">
+        <button type="button" id="page-prev">Prev</button>
+        <span id="page-label"></span>
+        <button type="button" id="page-next">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <p>Research software only. Past backtests are not a promise of future profit. Major Trend ladders are rare — sample size is small.</p>
+    <p><a href="https://github.com/randiapriliyadiR/gangplank-plunder-parrley">github.com/randiapriliyadiR/gangplank-plunder-parrley</a> &middot; Randi Apriliyadi</p>
+  </footer>
+</body>
+</html>

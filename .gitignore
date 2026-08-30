@@ -1,0 +1,27 @@
+# Build
+*.ex4
+*.log
+compile*.log
+Tester/gpp_compile*.log
+
+# Ship precompiled binary so users can attach without MetaEditor.
+*.ex5
+!/Gangplank Plunder Parrrley.ex5
+
+# Tester noise
+Tester/_run_*.ini
+Tester/last_summary_*.txt
+Tester/*.htm
+Tester/*.html
+Tester/*.json
+Tester/opt_*
+
+# Local / IDE
+.cursor/
+*.canvas.tsx
+*.canvas.status.json
+canvases/
+node_modules/
+.DS_Store
+Thumbs.db
+.superpowers/
