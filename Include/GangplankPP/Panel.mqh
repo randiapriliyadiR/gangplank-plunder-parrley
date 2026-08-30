@@ -15,7 +15,7 @@
 #define GPP_PNL_ROW      17
 #define GPP_PNL_TITLE_H  22
 #define GPP_PNL_WIDTH    380
-#define GPP_PNL_ROWS     10
+#define GPP_PNL_ROWS     11
 
 #define GPP_PNL_BG       C'14,22,28'
 #define GPP_PNL_BORDER   C'56,72,64'
@@ -135,7 +135,9 @@ void GppPanelUpdate(const SGppCfg &cfg,
    GppPnlLabel("r6", x, y, StringFormat("Bal %.2f | Eq %.2f",
               view.balance, view.equity), GPP_PNL_MUTED, 9, false);
    y += GPP_PNL_ROW;
-   GppPnlLabel("r7", x, y, view.reason, GPP_PNL_ACCENT, 9, false);
+   GppPnlLabel("r7", x, y, view.propStatus, GPP_PNL_TITLE, 9, false);
+   y += GPP_PNL_ROW;
+   GppPnlLabel("r8", x, y, view.reason, GPP_PNL_ACCENT, 9, false);
 
    g_gpp_pnl_built = true;
   }

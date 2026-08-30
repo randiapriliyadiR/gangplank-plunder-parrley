@@ -33,13 +33,28 @@ bool GppNear(const double a, const double b, const double point)
    return (MathAbs(a - b) <= eps);
   }
 
-bool GppPendingAllowed(const SGppSlot &slot, const double ask, const double bid)
+bool GppPendingAllowed(const string symbol, const SGppSlot &slot, const double ask, const double bid,
+                       const bool alreadyPlaced)
   {
    if(slot.lots <= 0.0 || slot.entry <= 0.0 || slot.sl <= 0.0)
       return false;
+   // Already armed: keep until market crosses through (fill or missed).
+   // Do NOT cancel when price merely approaches — that skips the breakout.
+   if(alreadyPlaced)
+     {
+      if(slot.isBuy)
+         return (ask < slot.entry);
+      return (bid > slot.entry);
+     }
+   const long   stops  = SymbolInfoInteger(symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const long   freeze = SymbolInfoInteger(symbol, SYMBOL_TRADE_FREEZE_LEVEL);
+   const double point  = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   double need = MathMax((double)stops, (double)freeze) * point;
+   if(need < point)
+      need = point;
    if(slot.isBuy)
-      return (slot.entry > ask);
-   return (slot.entry < bid);
+      return (slot.entry >= ask + need);
+   return (slot.entry <= bid - need);
   }
 
 ulong GppFindPendingTicket(const string symbol, const ulong magic, const string comment)
@@ -171,7 +186,7 @@ void GppSyncSlotLegs(const SGppCfg &cfg, const SGppSlot &slot, const double poin
          continue;
 
       const ulong ticket = GppFindPendingTicket(cfg.symbol, cfg.magic, cmt);
-      if(!GppPendingAllowed(slot, ask, bid))
+      if(!GppPendingAllowed(cfg.symbol, slot, ask, bid, ticket > 0))
         {
          if(ticket > 0)
             g_gppTrade.OrderDelete(ticket);

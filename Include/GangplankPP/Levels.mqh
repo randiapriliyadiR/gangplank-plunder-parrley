@@ -417,6 +417,8 @@ void GppClusterLevels(SGppTemplate &tpl, const double tol, const double minReact
    GppSortLevelsByPrice(tpl);
   }
 
+// Range box = nearest SUPPORT (low) below price + nearest RESIST (high) above price.
+// Breakout = leave this box: up → BuyStop at resist, down → SellStop at support.
 bool GppFindRange(const SGppTemplate &tpl, const double price, const double minWidth, SGppRange &rg)
   {
    ZeroMemory(rg);
@@ -425,14 +427,26 @@ bool GppFindRange(const SGppTemplate &tpl, const double price, const double minW
    for(int i = 0; i < tpl.levelCount; i++)
      {
       const double p = tpl.levels[i].price;
-      if(p < price)
+      if(!tpl.levels[i].isHigh && p < price)
         {
          if(sup < 0 || p > tpl.levels[sup].price)
             sup = i;
         }
-      else if(p > price)
+      if(tpl.levels[i].isHigh && p > price)
         {
          if(res < 0 || p < tpl.levels[res].price)
+            res = i;
+        }
+     }
+   // Fallback if typed sides missing after prune.
+   if(sup < 0 || res < 0)
+     {
+      for(int i = 0; i < tpl.levelCount; i++)
+        {
+         const double p = tpl.levels[i].price;
+         if(p < price && (sup < 0 || p > tpl.levels[sup].price))
+            sup = i;
+         if(p > price && (res < 0 || p < tpl.levels[res].price))
             res = i;
         }
      }
@@ -445,9 +459,12 @@ bool GppFindRange(const SGppTemplate &tpl, const double price, const double minW
       int nextRes = -1;
       for(int i = 0; i < tpl.levelCount; i++)
         {
-         if(i < sup && (nextSup < 0 || tpl.levels[i].price > tpl.levels[nextSup].price))
+         const double p = tpl.levels[i].price;
+         if(p < tpl.levels[sup].price &&
+            (nextSup < 0 || p > tpl.levels[nextSup].price))
             nextSup = i;
-         if(i > res && (nextRes < 0 || tpl.levels[i].price < tpl.levels[nextRes].price))
+         if(p > tpl.levels[res].price &&
+            (nextRes < 0 || p < tpl.levels[nextRes].price))
             nextRes = i;
         }
       if(nextSup < 0 && nextRes < 0)
@@ -559,7 +576,6 @@ double GppMajorBeyond(const SGppTemplate &tpl, const double from, const bool up)
      }
    if(!found)
      {
-      // farthest level beyond from
       for(int i = 0; i < tpl.levelCount; i++)
         {
          const double p = tpl.levels[i].price;
@@ -569,6 +585,38 @@ double GppMajorBeyond(const SGppTemplate &tpl, const double from, const bool up)
             found = true;
            }
          if(!up && p < from && (!found || p < best))
+           {
+            best = p;
+            found = true;
+           }
+        }
+     }
+   return (found ? best : 0.0);
+  }
+
+// Nearest level beyond `from` (faster cycle than farthest/strongest major).
+double GppNearestBeyond(const SGppTemplate &tpl, const double from, const bool up)
+  {
+   double best = 0.0;
+   bool found = false;
+   for(int i = 0; i < tpl.levelCount; i++)
+     {
+      const double p = tpl.levels[i].price;
+      if(up)
+        {
+         if(p <= from)
+            continue;
+         if(!found || p < best)
+           {
+            best = p;
+            found = true;
+           }
+        }
+      else
+        {
+         if(p >= from)
+            continue;
+         if(!found || p > best)
            {
             best = p;
             found = true;
@@ -631,7 +679,7 @@ bool GppBuildTemplate(const SGppCfg &cfg,
    if(!GppFindRange(tpl, midPrice, minWidth, tpl.range))
       return false;
 
-   // Shared major TP: strongest level beyond the last ladder rung zone
+   // Shared major TP beyond last ladder rung (quality R:R).
    int above[];
    int below[];
    GppLevelsResistAbove(tpl, midPrice, above);
@@ -640,20 +688,16 @@ bool GppBuildTemplate(const SGppCfg &cfg,
    double buyBeyond = midPrice;
    double sellBeyond = midPrice;
    if(ArraySize(above) > 0)
-     {
-      const int last = MathMin(ArraySize(above), maxL) - 1;
-      buyBeyond = tpl.levels[above[last]].price;
-     }
+      buyBeyond = tpl.levels[above[MathMin(ArraySize(above), maxL) - 1]].price;
    if(ArraySize(below) > 0)
-     {
-      const int last = MathMin(ArraySize(below), maxL) - 1;
-      sellBeyond = tpl.levels[below[last]].price;
-     }
+      sellBeyond = tpl.levels[below[MathMin(ArraySize(below), maxL) - 1]].price;
 
    tpl.tpBuy  = GppMajorBeyond(tpl, buyBeyond, true);
    tpl.tpSell = GppMajorBeyond(tpl, sellBeyond, false);
-
-   // Fallback: if no major beyond ladder, use next level after last rung
+   if(tpl.tpBuy <= 0.0)
+      tpl.tpBuy = GppNearestBeyond(tpl, buyBeyond, true);
+   if(tpl.tpSell <= 0.0)
+      tpl.tpSell = GppNearestBeyond(tpl, sellBeyond, false);
    if(tpl.tpBuy <= 0.0 && ArraySize(above) > maxL)
       tpl.tpBuy = tpl.levels[above[maxL]].price;
    if(tpl.tpSell <= 0.0 && ArraySize(below) > maxL)
@@ -676,7 +720,19 @@ void GppDeleteChart(const string prefix)
      }
   }
 
-void GppDrawTemplate(const SGppCfg &cfg, const SGppTemplate &tpl)
+void GppDrawHLine(const string name, const double price, const color clr,
+                  const ENUM_LINE_STYLE style, const int width)
+  {
+   ObjectCreate(0, name, OBJ_HLINE, 0, 0, price);
+   ObjectSetInteger(0, name, OBJPROP_COLOR, clr);
+   ObjectSetInteger(0, name, OBJPROP_STYLE, style);
+   ObjectSetInteger(0, name, OBJPROP_WIDTH, width);
+   ObjectSetInteger(0, name, OBJPROP_BACK, true);
+   ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);
+  }
+
+// Chart = range box + armed entries + shared TP (not every historical swing).
+void GppDrawSetup(const SGppCfg &cfg, const SGppTemplate &tpl, const SGppPlan &plan)
   {
    const string prefix = "GPP_";
    if(!cfg.drawTemplate || !tpl.valid)
@@ -684,7 +740,6 @@ void GppDrawTemplate(const SGppCfg &cfg, const SGppTemplate &tpl)
       GppDeleteChart(prefix);
       return;
      }
-   // Skip heavy chart objects in non-visual tester (huge tick volume)
    if(MQLInfoInteger(MQL_TESTER) && !MQLInfoInteger(MQL_VISUAL_MODE))
       return;
 
@@ -695,38 +750,6 @@ void GppDrawTemplate(const SGppCfg &cfg, const SGppTemplate &tpl)
    if(t1 == 0 || t2 == 0)
       return;
 
-   for(int i = 0; i < tpl.levelCount; i++)
-     {
-      const string n = prefix + "L" + IntegerToString(i);
-      ObjectCreate(0, n, OBJ_HLINE, 0, 0, tpl.levels[i].price);
-      ObjectSetInteger(0, n, OBJPROP_COLOR, clrDodgerBlue);
-      ObjectSetInteger(0, n, OBJPROP_STYLE, STYLE_DOT);
-      ObjectSetInteger(0, n, OBJPROP_WIDTH, 1);
-      ObjectSetInteger(0, n, OBJPROP_BACK, true);
-      ObjectSetInteger(0, n, OBJPROP_SELECTABLE, false);
-     }
-
-   if(tpl.tpBuy > 0.0)
-     {
-      const string n = prefix + "TPB";
-      ObjectCreate(0, n, OBJ_HLINE, 0, 0, tpl.tpBuy);
-      ObjectSetInteger(0, n, OBJPROP_COLOR, clrGold);
-      ObjectSetInteger(0, n, OBJPROP_STYLE, STYLE_SOLID);
-      ObjectSetInteger(0, n, OBJPROP_WIDTH, 2);
-      ObjectSetInteger(0, n, OBJPROP_BACK, true);
-      ObjectSetInteger(0, n, OBJPROP_SELECTABLE, false);
-     }
-   if(tpl.tpSell > 0.0)
-     {
-      const string n = prefix + "TPS";
-      ObjectCreate(0, n, OBJ_HLINE, 0, 0, tpl.tpSell);
-      ObjectSetInteger(0, n, OBJPROP_COLOR, clrGold);
-      ObjectSetInteger(0, n, OBJPROP_STYLE, STYLE_SOLID);
-      ObjectSetInteger(0, n, OBJPROP_WIDTH, 2);
-      ObjectSetInteger(0, n, OBJPROP_BACK, true);
-      ObjectSetInteger(0, n, OBJPROP_SELECTABLE, false);
-     }
-
    if(tpl.range.valid)
      {
       const string box = prefix + "RANGE";
@@ -736,8 +759,36 @@ void GppDrawTemplate(const SGppCfg &cfg, const SGppTemplate &tpl)
       ObjectSetInteger(0, box, OBJPROP_BGCOLOR, C'28,36,48');
       ObjectSetInteger(0, box, OBJPROP_BACK, true);
       ObjectSetInteger(0, box, OBJPROP_SELECTABLE, false);
+      GppDrawHLine(prefix + "RES", tpl.range.resist, clrDodgerBlue, STYLE_SOLID, 2);
+      GppDrawHLine(prefix + "SUP", tpl.range.support, clrDodgerBlue, STYLE_SOLID, 2);
      }
+
+   for(int i = 0; i < plan.count; i++)
+     {
+      if(!plan.slots[i].valid)
+         continue;
+      const string tag = IntegerToString(plan.slots[i].ladder);
+      const color ec = plan.slots[i].isBuy ? clrDeepSkyBlue : clrOrchid;
+      GppDrawHLine(prefix + (plan.slots[i].isBuy ? "BE" : "SE") + tag,
+                   plan.slots[i].entry, ec, STYLE_DASH, 1);
+      if(plan.slots[i].sl > 0.0)
+         GppDrawHLine(prefix + (plan.slots[i].isBuy ? "BS" : "SS") + tag,
+                      plan.slots[i].sl, clrTomato, STYLE_DOT, 1);
+     }
+
+   if(tpl.tpBuy > 0.0)
+      GppDrawHLine(prefix + "TPB", tpl.tpBuy, clrGold, STYLE_SOLID, 2);
+   if(tpl.tpSell > 0.0)
+      GppDrawHLine(prefix + "TPS", tpl.tpSell, clrGold, STYLE_SOLID, 2);
+
    ChartRedraw(0);
+  }
+
+void GppDrawTemplate(const SGppCfg &cfg, const SGppTemplate &tpl)
+  {
+   SGppPlan empty;
+   ZeroMemory(empty);
+   GppDrawSetup(cfg, tpl, empty);
   }
 
 int GppLevelsSelfTest(void)

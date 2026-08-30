@@ -299,7 +299,8 @@ function renderOverview() {
     (s.to || "") +
     " \u00b7 " +
     (s.model || "") +
-    pairNote;
+    pairNote +
+    (base.note ? " \u00b7 " + base.note : "");
 
   const end = Number(s.deposit) + Number(s.net || 0);
   const ddFmt = (amt, p) => {

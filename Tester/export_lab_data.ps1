@@ -10,6 +10,7 @@ param(
   [string]$GuardLabel = "",
   [string]$ModelLabel = "Every tick based on real ticks",
   [string]$Broker = "XAUUSD_Exness (imported ticks)",
+  [string]$Note = "",
   [switch]$ReplaceCatalog
 )
 
@@ -298,6 +299,7 @@ $standEntry = @{
   bestWin=(Convert-TradeSummary $bestWin)
   worstLoss=(Convert-TradeSummary $worstLoss)
 }
+if ($Note) { $standEntry.note = $Note }
 Update-StandsJson -StandsPath (Join-Path $DocsData "stands.json") -StandId $StandId -StandEntry $standEntry -ReplaceCatalog:$ReplaceCatalog
 Write-Host "Exported $($trades.Count) trades across $($months.Count) months -> $standDir"
 Write-Host "Summary: net=$($summary.net) PF=$($summary.profitFactor) trades=$($summary.totalTrades) equityDD=$($summary.equityDdPct)%"

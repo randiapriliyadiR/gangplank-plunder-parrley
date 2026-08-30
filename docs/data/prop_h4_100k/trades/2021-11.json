@@ -1,0 +1,46 @@
+{
+    "trades":  [
+                   {
+                       "id":  22,
+                       "side":  "buy",
+                       "volume":  0.32,
+                       "openTime":  "2021.11.10 13:37:40",
+                       "closeTime":  "2021.11.16 16:39:40",
+                       "openPrice":  1847.08,
+                       "closePrice":  1854.18,
+                       "profit":  -864.24,
+                       "balance":  102524.04,
+                       "comment":  "GPP|B1",
+                       "commission":  0,
+                       "swap":  0
+                   },
+                   {
+                       "id":  24,
+                       "side":  "buy",
+                       "volume":  0.52,
+                       "openTime":  "2021.11.16 08:55:40",
+                       "closeTime":  "2021.11.19 08:33:40",
+                       "openPrice":  1870.8,
+                       "closePrice":  1854.18,
+                       "profit":  -870.79,
+                       "balance":  101653.25,
+                       "comment":  "GPP|B2",
+                       "commission":  0,
+                       "swap":  -6.55
+                   },
+                   {
+                       "id":  26,
+                       "side":  "buy",
+                       "volume":  0.52,
+                       "openTime":  "2021.11.18 00:54:20",
+                       "closeTime":  "2021.11.22 14:22:20",
+                       "openPrice":  1870.8,
+                       "closePrice":  1815.39,
+                       "profit":  -1062.46,
+                       "balance":  100590.79,
+                       "comment":  "GPP|B2",
+                       "commission":  0,
+                       "swap":  -48.38
+                   }
+               ]
+}

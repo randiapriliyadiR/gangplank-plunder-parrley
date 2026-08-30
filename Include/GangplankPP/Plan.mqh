@@ -161,18 +161,16 @@ bool GppFillSlot(const SGppCfg &cfg,
    return true;
   }
 
-bool GppSkipFirstRung(const SGppCfg &cfg,
-                      const SGppTemplate &tpl,
-                      const bool isBuy,
-                      const int ladder,
-                      const double bid)
+// Pending breakout is valid only if stop still sits beyond the market.
+bool GppSlotBreakoutReady(const SGppCfg &cfg, const SGppSlot &slot,
+                          const double ask, const double bid)
   {
-   if(ladder != 1 || !tpl.range.valid)
+   if(!slot.valid || slot.entry <= 0.0 || slot.sl <= 0.0)
       return false;
-   const double tol = tpl.atr * cfg.clusterATR;
-   if(isBuy)
-      return (bid >= tpl.range.resist - tol);
-   return (bid <= tpl.range.support + tol);
+   // Soft gate for planning: stop must still be on the breakout side of market.
+   if(slot.isBuy)
+      return (slot.entry > ask);
+   return (slot.entry < bid);
   }
 
 void GppSizeSlots(const SGppCfg &cfg, SGppPlan &plan)
@@ -205,41 +203,75 @@ void GppBuildPlan(const SGppCfg &cfg, const SGppTemplate &tpl, const double bid,
    if(!GppIsSeasonMonth(cfg, TimeCurrent()))
       return;
 
+   const double ask = SymbolInfoDouble(cfg.symbol, SYMBOL_ASK);
+   const double liveBid = (bid > 0.0 ? bid : SymbolInfoDouble(cfg.symbol, SYMBOL_BID));
+   const double liveAsk = (ask > 0.0 ? ask : liveBid);
+
+   // Quality box: BuyStop @ resist, SellStop @ support, lalu ladder di luar box.
+   // Kalau tepi box sudah dilalui → sisi itu kosong (no chase).
    int above[];
    int below[];
-   GppLevelsResistAbove(tpl, bid, above);
-   GppLevelsSupportBelow(tpl, bid, below);
+   ArrayResize(above, 0);
+   ArrayResize(below, 0);
 
-   // Range box anchors: break atas = buy at resist, break bawah = sell at support.
-   if(tpl.range.resIdx >= 0 && !GppIdxInArray(above, tpl.range.resIdx))
+   if(tpl.range.resIdx >= 0)
      {
-      const int sz = ArraySize(above);
-      ArrayResize(above, sz + 1);
-      for(int i = sz; i > 0; i--)
-         above[i] = above[i - 1];
+      ArrayResize(above, 1);
       above[0] = tpl.range.resIdx;
      }
-   if(tpl.range.supIdx >= 0 && !GppIdxInArray(below, tpl.range.supIdx))
+   if(tpl.range.supIdx >= 0)
      {
-      const int sz = ArraySize(below);
-      ArrayResize(below, sz + 1);
-      for(int i = sz; i > 0; i--)
-         below[i] = below[i - 1];
+      ArrayResize(below, 1);
       below[0] = tpl.range.supIdx;
      }
 
+   int moreR[];
+   int moreS[];
+   GppLevelsResistAbove(tpl, tpl.range.resist, moreR);
+   GppLevelsSupportBelow(tpl, tpl.range.support, moreS);
+   for(int i = 0; i < ArraySize(moreR); i++)
+     {
+      if(GppIdxInArray(above, moreR[i]))
+         continue;
+      const int sz = ArraySize(above);
+      ArrayResize(above, sz + 1);
+      above[sz] = moreR[i];
+     }
+   for(int i = 0; i < ArraySize(moreS); i++)
+     {
+      if(GppIdxInArray(below, moreS[i]))
+         continue;
+      const int sz = ArraySize(below);
+      ArrayResize(below, sz + 1);
+      below[sz] = moreS[i];
+     }
+
    const int maxL = MathMax(1, cfg.maxLadder);
+   bool boxBuyArmed = false;
+   bool boxSellArmed = false;
 
    for(int k = 0; k < ArraySize(above) && k < maxL; k++)
      {
       if(tpl.tpBuy <= 0.0)
          break;
-      if(GppSkipFirstRung(cfg, tpl, true, k + 1, bid))
-         continue;
       const int otherIdx = (k == 0 ? tpl.range.supIdx : above[k - 1]);
       SGppSlot slot;
       if(!GppFillSlot(cfg, tpl, true, k + 1, above[k], otherIdx, tpl.tpBuy, slot))
+        {
+         if(k == 0)
+            break;
          continue;
+        }
+      if(!GppSlotBreakoutReady(cfg, slot, liveAsk, liveBid))
+        {
+         if(k == 0)
+            break;
+         continue;
+        }
+      if(k == 0)
+         boxBuyArmed = true;
+      else if(!boxBuyArmed)
+         break;
       GppAddSlot(plan, slot);
      }
 
@@ -247,12 +279,24 @@ void GppBuildPlan(const SGppCfg &cfg, const SGppTemplate &tpl, const double bid,
      {
       if(tpl.tpSell <= 0.0)
          break;
-      if(GppSkipFirstRung(cfg, tpl, false, k + 1, bid))
-         continue;
       const int otherIdx = (k == 0 ? tpl.range.resIdx : below[k - 1]);
       SGppSlot slot;
       if(!GppFillSlot(cfg, tpl, false, k + 1, below[k], otherIdx, tpl.tpSell, slot))
+        {
+         if(k == 0)
+            break;
          continue;
+        }
+      if(!GppSlotBreakoutReady(cfg, slot, liveAsk, liveBid))
+        {
+         if(k == 0)
+            break;
+         continue;
+        }
+      if(k == 0)
+         boxSellArmed = true;
+      else if(!boxSellArmed)
+         break;
       GppAddSlot(plan, slot);
      }
 

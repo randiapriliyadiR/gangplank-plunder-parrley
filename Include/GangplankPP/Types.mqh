@@ -46,7 +46,11 @@ struct SGppCfg
    double            maxSlAtr;         // Max SL distance from break (ATR)
    bool              drawTemplate;
    bool              oneDirection;   // no hedge: cancel/close opposite when one side fills
-   bool              lockTemplate;   // keep S/R + plan until no GPP orders/positions
+   bool              lockTemplate;   // keep S/R + plan until flat (no repaint)
+   bool              propChallenge;  // prop firm challenge mode
+   double            propDailyDdPct;
+   double            propMaxDdPct;
+   double            propTargetPct;
   };
 
 struct SGppSwing
@@ -122,24 +126,25 @@ struct SGppView
    double balance;
    double equity;
    bool   seasonOn;
+   string propStatus;
   };
 
 void GppCfgInit(SGppCfg &c)
   {
    ZeroMemory(c);
-   c.tf                = PERIOD_D1;
+   c.tf                = PERIOD_H4;
    c.pivotBars         = 3;
-   c.lookback          = 180;
+   c.lookback          = 240;
    c.atrPeriod         = 14;
    c.minReactionATR    = 0.8;
    c.clusterATR        = 0.80;
    c.minLevelSepATR    = 1.0;
    c.nearLevels        = 3;
    c.breakBufferATR    = 0.15;
-   c.maxLadder         = 5;
-   c.riskPct           = 2.0;
+   c.maxLadder         = 3;
+   c.riskPct           = 1.0;
    c.lotDecay          = 0.85;
-   c.budgetPct         = 30.0;
+   c.budgetPct         = 15.0;
    c.slMode            = GPP_SL_FIXED;
    c.useSeasonFilter   = false;
    c.maxPending        = 24;
@@ -149,6 +154,10 @@ void GppCfgInit(SGppCfg &c)
    c.drawTemplate      = true;
    c.oneDirection      = true;
    c.lockTemplate      = true;
+   c.propChallenge     = true;
+   c.propDailyDdPct    = 3.0;
+   c.propMaxDdPct      = 10.0;
+   c.propTargetPct     = 10.0;
   }
 
 int GppParseMonths(const string src, int &months[])

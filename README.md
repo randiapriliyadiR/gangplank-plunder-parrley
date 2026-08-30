@@ -5,79 +5,65 @@
 </p>
 
 > *"Parrrley? I'd rather plunder."*  
-> An MT5 Expert Advisor named after Gangplank — Major Trend S/R ladders, shared yellow TP, and Fixed / BEP / TrailLadder management.
+> An MT5 Expert Advisor named after Gangplank — Major Trend S/R ladders, shared yellow TP, Fixed / BEP / TrailLadder, plus an optional prop-firm challenge.
 
 ## Trade lab (GitHub Pages)
 
 **URL:** [randiapriliyadir.github.io/gangplank-plunder-parrley](https://randiapriliyadir.github.io/gangplank-plunder-parrley/)
 
-Interactive backtest explorer on **Exness Pro real ticks** (`XAUUSD_ExnessPro`, Model 4). Lab deposit: **$100,000**.
+Interactive backtest explorer on **Exness Pro** ticks (`XAUUSD_ExnessPro`). Lab deposit: **$100,000**.
 
-| Stand | SL mode | Net | Return | PF | Equity DD | WR | Trades |
-|---|---|---:|---:|---:|---:|---:|---:|
-| **Best (Fixed)** | Fixed | **+$160,732** | **+161%** | **2.91** | **27.1%** | **71%** | **14** |
-| BEP | Break-even on next rung | +$126,320 | +126% | 2.67 | 36.0% | 62% | 13 |
-| Trail | Trail to next rung SL | +$122,359 | +122% | 2.57 | 37.2% | 62% | 13 |
+| Stand | Mode | Net | PF | Equity DD | WR | Trades |
+|---|---|---:|---:|---:|---:|---:|
+| **Prop PASS (H4)** | Challenge 3%/10% → +10% | **+$10,068** | **1.81** | **5.8%** | **54%** | **28** |
+| Fixed D1 | Full run, no prop halt | +$160,732 | 2.91 | 27.1% | 71% | 14 |
+| BEP D1 | Break-even on next rung | +$126,320 | 2.67 | 36.0% | 62% | 13 |
+| Trail D1 | Trail to next rung SL | +$122,359 | 2.57 | 37.2% | 62% | 13 |
 
-Same template on all three: D1 Major Trend, dual-arm idle, one-direction after fill, cluster 0.8 ATR, min sep 1.0 ATR, max SL 2.5 ATR, ladder 3.
+**Prop PASS** halted at **+$10% on 2023.03.13** without breaching daily 3% or max 10% (risk 1%, H4, Model 1 OHLC). Preset: [`Presets/GPP_XAU_H4_PropPass.set`](Presets/GPP_XAU_H4_PropPass.set).
 
 ## What it is
 
-**Gangplank Plunder Parrrley** places **Buy Stop / Sell Stop** ladders on automatic D1 support/resistance zones (range-box style). Idle = both sides armed from the current range; after one side fills, focus that direction only. Each direction shares one major take-profit (yellow).
+**Gangplank Plunder Parrrley** places **Buy Stop / Sell Stop** ladders on automatic support/resistance (range-box). Idle = both sides armed; after one side fills, focus that direction. Shared major TP (yellow).
 
-No indicators or candlestick filters — only price boundaries, like the Major Trend playbook (blue entries, yellow TP).
+Default template: **H4** (best equity stand). Optional **prop challenge**: race +target vs daily/max equity DD, then halt.
 
-## Best verified stand — v1.06 Fixed
+## Prop firm preset
 
 | Setting | Value |
 |---|---|
-| Symbol | **XAUUSD_ExnessPro** (Exness Pro ticks) |
-| Chart / template TF | **D1** |
-| Max ladder / side | **3** |
-| Near levels | 3 support + 3 resistance |
-| Cluster / min sep | **0.80 / 1.0** ATR |
-| Max SL distance | **2.5** ATR from break |
-| Risk / trade | **2%** equity |
-| Lot decay | 0.85 per higher rung |
-| Budget | 30% (50/50 while dual-arm idle) |
-| One direction | ON after fill |
-| Lock template | ON (no S/R repaint while booked) |
-| SL mode | **Fixed** |
-| Season filter | Off (all months) |
-| Deposit | **$100,000** |
-| Range | 2021.01.01 → 2025.07.31 |
-| Model | **Every tick based on real ticks** |
+| File | `Presets/GPP_XAU_H4_PropPass.set` |
+| Template TF | **H4** |
+| Risk / trade | **1%** (`OrderCalcProfit` lots) |
+| Budget | 15% |
+| Daily DD | **3%** from day-start equity |
+| Max DD | **10%** from challenge-start equity |
+| Target | **+10%** then halt |
+| SL mode | Fixed |
+| Verified | **PASS** 2023.03.13 → eq ≈ $110,068 |
 
-### SL mode takeaway
-
-| Mode | Net | PF | DD | WR | N |
-|---|---:|---:|---:|---:|---:|
-| **Fixed (shipped)** | **+$161k** | **2.91** | **27%** | **71%** | **14** |
-| BEP | +$126k | 2.67 | 36% | 62% | 13 |
-| TrailLadder | +$122k | 2.57 | 37% | 62% | 13 |
-
-**Fixed wins.** Moving SL to BE / next-rung SL on gold D1 often cuts winners before the shared major TP.
+Load: attach EA → Inputs → **Load** → pick the `.set`.
 
 ## Install (MT5)
 
 1. Clone/copy this folder under `MQL5/Experts/Gangplank Plunder Parrrley/`.
-2. **Quick start:** attach the shipped `Gangplank Plunder Parrrley.ex5`. Refresh Navigator if needed.
-3. **From source:** open `Gangplank Plunder Parrrley.mq5` in MetaEditor → Compile (F7).
-4. Attach to **XAUUSD** (or any symbol containing `XAUUSD`, e.g. `XAUUSD_ExnessPro`) on **D1**. Enable Algo Trading.
+2. Compile `Gangplank Plunder Parrrley.mq5` (F7) or use shipped `.ex5`.
+3. Attach to **XAUUSD*** on **H4** (or any chart; template TF is an input). Enable Algo Trading.
+4. For prop rules: load `Presets/GPP_XAU_H4_PropPass.set`.
 
 ## Inputs (friendly names)
 
 | Group | What you touch |
 |---|---|
-| Symbol / template | Filter, D1 swing lookback, cluster, min level sep, near zones |
-| Major Trend | Max ladder, season months, one-direction, lock template |
-| Risk / SL | Risk %, lot decay, budget, **Fixed / BEP / TrailLadder**, max SL ATR |
+| Symbol / template | Filter, TF, swing lookback, cluster, near zones |
+| Major Trend | Max ladder, season, one-direction, lock template |
+| Risk / SL | Risk %, budget, **Fixed / BEP / TrailLadder**, max SL ATR |
+| Prop firm challenge | Enable race, daily %, max %, target % |
 
 ## Disclaimer
 
-Past backtests are not a promise of future profit. Only **14** trades in ~4.5 years — high PF, small sample. Equity DD near **27%** occurred on the published Fixed stand. Use money you can afford to risk. This is research software, not financial advice.
+Past backtests are not a promise of future profit. Prop PASS used **Model 1 (OHLC)**; Model 4 every-tick may differ. Use money you can afford to risk. This is research software, not financial advice.
 
 ## Author
 
-**Randi Apriliyadi**  
-Repository: [github.com/randiapriliyadiR/gangplank-plunder-parrley](https://github.com/randiapriliyadiR/gangplank-plunder-parrley)
+**Randi Apriliyadi** — [github.com/randiapriliyadiR](https://github.com/randiapriliyadiR)

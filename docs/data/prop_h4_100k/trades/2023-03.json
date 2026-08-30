@@ -1,0 +1,60 @@
+{
+    "trades":  [
+                   {
+                       "id":  51,
+                       "side":  "buy",
+                       "volume":  0.4,
+                       "openTime":  "2023.03.03 19:30:40",
+                       "closeTime":  "2023.03.07 15:02:40",
+                       "openPrice":  1851.33,
+                       "closePrice":  1825.81,
+                       "profit":  -1030.88,
+                       "balance":  102370.48,
+                       "comment":  "GPP|B1",
+                       "commission":  0,
+                       "swap":  -10.08
+                   },
+                   {
+                       "id":  53,
+                       "side":  "buy",
+                       "volume":  0.46,
+                       "openTime":  "2023.03.10 14:24:40",
+                       "closeTime":  "2023.03.10 15:03:40",
+                       "openPrice":  1848.63,
+                       "closePrice":  1861.42,
+                       "profit":  588.34,
+                       "balance":  102958.82,
+                       "comment":  "GPP|B1",
+                       "commission":  0,
+                       "swap":  0
+                   },
+                   {
+                       "id":  56,
+                       "side":  "buy",
+                       "volume":  1.72,
+                       "openTime":  "2023.03.13 00:00:00",
+                       "closeTime":  "2023.03.13 14:45:40",
+                       "openPrice":  1873.61,
+                       "closePrice":  1911.19,
+                       "profit":  645.81,
+                       "balance":  103604.63,
+                       "comment":  "GPP|B1",
+                       "commission":  0,
+                       "swap":  0
+                   },
+                   {
+                       "id":  57,
+                       "side":  "buy",
+                       "volume":  0.33,
+                       "openTime":  "2023.03.13 09:36:40",
+                       "closeTime":  "2023.03.13 14:45:40",
+                       "openPrice":  1891.62,
+                       "closePrice":  1911.19,
+                       "profit":  6463.76,
+                       "balance":  110068.39,
+                       "comment":  "GPP|B2",
+                       "commission":  0,
+                       "swap":  0
+                   }
+               ]
+}

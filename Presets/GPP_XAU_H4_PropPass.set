@@ -1,0 +1,37 @@
+; Gangplank Plunder Parrrley — H4 Prop Firm PASS preset
+; Symbol: XAUUSD_ExnessPro | H4 box breakout | Fixed SL
+; Challenge: daily DD 3% (day-start equity) / max DD 10% (start equity) / target +10%
+; Verified PASS: 2023.03.13 eq=$110,068 | risk 1% | OrderCalcProfit lots | Model 1 OHLC
+; Load: EA Inputs → Load → this file
+InpSymbol=XAUUSD||XAUUSD||0||N||N
+InpTemplateTF=16388||16388||0||N||N
+InpPivotBars=3||3||1||N||N
+InpLookback=240||240||1||N||N
+InpNearLevels=3||3||1||N||N
+InpAtrPeriod=14||14||1||N||N
+InpMinReactionATR=0.8||0.8||0.010000||10.000000||0.010000||N
+InpClusterATR=0.80||0.80||0.010000||10.000000||0.010000||N
+InpMinLevelSepATR=1.0||1.0||0.010000||10.000000||0.010000||N
+InpBreakBufferATR=0.15||0.15||0.010000||10.000000||0.010000||N
+InpBreakBufferPoints=0||0||1||N||N
+InpDrawTemplate=true||true||0||N||N
+InpMaxLadder=3||3||1||N||N
+InpUseSeasonFilter=false||false||0||N||N
+InpSeasonMonths=1,2,3,4,5,6,7,8,9,10,11,12||1,2,3,4,5,6,7,8,9,10,11,12||0||N||N
+InpOneDirection=true||true||0||N||N
+InpLockTemplate=true||true||0||N||N
+InpRiskPct=1.0||1.0||0.010000||100.000000||0.010000||N
+InpLotDecay=0.85||0.85||0.010000||10.000000||0.010000||N
+InpBudgetPct=15.0||15.0||0.010000||100.000000||0.010000||N
+InpMaxSlAtr=2.5||2.5||0.010000||20.000000||0.010000||N
+InpSlMode=0||0||0||N||N
+InpMaxSpreadPoints=80||80||1||N||N
+InpDeviation=30||30||1||N||N
+InpMaxLotPerOrder=10.0||10.0||0.010000||100.000000||0.010000||N
+InpMaxPending=40||40||1||N||N
+InpMaxPos=24||24||1||N||N
+InpMagic=26083001||26083001||1||N||N
+InpPropChallenge=true||true||0||N||N
+InpPropDailyDdPct=3.0||3.0||0.010000||50.000000||0.010000||N
+InpPropMaxDdPct=10.0||10.0||0.010000||50.000000||0.010000||N
+InpPropTargetPct=10.0||10.0||0.010000||100.000000||0.010000||N

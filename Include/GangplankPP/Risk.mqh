@@ -75,35 +75,44 @@ double GppLotsForRisk(const string symbol,
   {
    if(equity <= 0.0 || riskPct <= 0.0)
       return 0.0;
-
-   const double tickSize  = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_SIZE);
-   const double tickValue = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_VALUE);
-   if(tickSize <= 0.0 || tickValue <= 0.0)
-      return 0.0;
-
-   const double slDist = MathAbs(entry - sl);
-   if(slDist < tickSize)
-      return 0.0;
-
-   const double ticks = slDist / tickSize;
-   const double lossPerLot = ticks * tickValue;
-   if(lossPerLot <= 0.0)
+   if(entry <= 0.0 || sl <= 0.0 || MathAbs(entry - sl) < 1e-12)
       return 0.0;
 
    const double riskMoney = equity * riskPct / 100.0;
+   double lossPerLot = 0.0;
+   const bool isBuy = (entry > sl);
+   if(!OrderCalcProfit(isBuy ? ORDER_TYPE_BUY : ORDER_TYPE_SELL,
+                       symbol, 1.0, entry, sl, lossPerLot))
+     {
+      const double tickSize  = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_SIZE);
+      const double tickValue = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_VALUE);
+      if(tickSize <= 0.0 || tickValue <= 0.0)
+         return 0.0;
+      lossPerLot = -(MathAbs(entry - sl) / tickSize) * tickValue;
+     }
+   lossPerLot = MathAbs(lossPerLot);
+   if(lossPerLot <= 0.0)
+      return 0.0;
+
    return GppNormalizeLots(symbol, riskMoney / lossPerLot);
   }
 
 double GppOrderRiskMoney(const string symbol, const double lots, const double entry, const double sl)
   {
-   if(lots <= 0.0 || sl <= 0.0)
+   if(lots <= 0.0 || sl <= 0.0 || entry <= 0.0)
       return 0.0;
-   const double tickSize  = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_SIZE);
-   const double tickValue = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_VALUE);
-   if(tickSize <= 0.0 || tickValue <= 0.0)
-      return 0.0;
-   const double slDist = MathAbs(entry - sl);
-   return (slDist / tickSize) * tickValue * lots;
+   double loss = 0.0;
+   const bool isBuy = (entry > sl);
+   if(!OrderCalcProfit(isBuy ? ORDER_TYPE_BUY : ORDER_TYPE_SELL,
+                       symbol, lots, entry, sl, loss))
+     {
+      const double tickSize  = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_SIZE);
+      const double tickValue = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_VALUE);
+      if(tickSize <= 0.0 || tickValue <= 0.0)
+         return 0.0;
+      return (MathAbs(entry - sl) / tickSize) * tickValue * lots;
+     }
+   return MathAbs(loss);
   }
 
 int GppCountPositions(const string symbol, const ulong magic)

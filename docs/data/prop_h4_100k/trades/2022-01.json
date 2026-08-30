@@ -1,0 +1,18 @@
+{
+    "trades":  [
+                   {
+                       "id":  28,
+                       "side":  "buy",
+                       "volume":  0.52,
+                       "openTime":  "2022.02.14 15:39:40",
+                       "closeTime":  "2022.01.26 20:28:40",
+                       "openPrice":  1870.8,
+                       "closePrice":  1815.39,
+                       "profit":  -1030.2,
+                       "balance":  99560.59,
+                       "comment":  "GPP|B2",
+                       "commission":  0,
+                       "swap":  -16.12
+                   }
+               ]
+}

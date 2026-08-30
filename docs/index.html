@@ -18,12 +18,12 @@
     <div class="hero-bg" style="background-image:url('assets/gangplank.jpg')"></div>
     <div class="hero-veil"></div>
     <div class="hero-inner">
-      <p class="hero-kicker">Backtest lab &middot; v<span id="ver">1.06</span></p>
+      <p class="hero-kicker">Backtest lab &middot; v<span id="ver">1.12</span></p>
       <h1>Gangplank Plunder Parrrley</h1>
-      <p class="hero-lead">Break the barrels. Major Trend ladders on D1 gold — Fixed SL still rules the powder magazine.</p>
+      <p class="hero-lead">H4 range-box breakout on gold — Fixed SL, plus a prop-firm PASS stand (3% daily / 10% max → +10%).</p>
       <div class="hero-actions">
         <a class="btn" href="https://github.com/randiapriliyadiR/gangplank-plunder-parrley">Source on GitHub</a>
-        <a class="btn btn-ghost" href="#overview">Jump to best stand</a>
+        <a class="btn btn-ghost" href="#overview">Jump to stands</a>
       </div>
     </div>
   </header>
@@ -36,9 +36,10 @@
 
   <main class="wrap">
     <div class="lab-bar">
-      <p class="lab-bar-label">SL mode</p>
+      <p class="lab-bar-label">Stand</p>
       <div class="seg" id="tf-seg" role="tablist">
-        <button type="button" class="seg-btn active" data-stand="fixed_100k">Fixed</button>
+        <button type="button" class="seg-btn active" data-stand="prop_h4_100k">Prop PASS</button>
+        <button type="button" class="seg-btn" data-stand="fixed_100k">Fixed D1</button>
         <button type="button" class="seg-btn" data-stand="bep_100k">BEP</button>
         <button type="button" class="seg-btn" data-stand="trail_100k">Trail</button>
       </div>
