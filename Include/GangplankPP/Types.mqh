@@ -47,7 +47,8 @@ struct SGppCfg
    bool              drawTemplate;
    bool              oneDirection;   // no hedge: cancel/close opposite when one side fills
    bool              lockTemplate;   // keep S/R + plan until flat (no repaint)
-   bool              propChallenge;  // prop firm challenge mode
+   bool              propChallenge;
+   bool              propHaltOnTarget; // false = log PASS then keep trading
    double            propDailyDdPct;
    double            propMaxDdPct;
    double            propTargetPct;
@@ -155,6 +156,7 @@ void GppCfgInit(SGppCfg &c)
    c.oneDirection      = true;
    c.lockTemplate      = true;
    c.propChallenge     = true;
+   c.propHaltOnTarget  = false;
    c.propDailyDdPct    = 3.0;
    c.propMaxDdPct      = 10.0;
    c.propTargetPct     = 10.0;

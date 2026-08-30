@@ -33,28 +33,28 @@
                        "side":  "buy",
                        "volume":  1.72,
                        "openTime":  "2023.03.13 00:00:00",
-                       "closeTime":  "2023.03.13 14:45:40",
+                       "closeTime":  "2023.03.15 11:33:40",
                        "openPrice":  1873.61,
-                       "closePrice":  1911.19,
-                       "profit":  645.81,
-                       "balance":  103604.63,
+                       "closePrice":  1918.48,
+                       "profit":  7674.3,
+                       "balance":  110633.12,
                        "comment":  "GPP|B1",
                        "commission":  0,
-                       "swap":  0
+                       "swap":  -43.34
                    },
                    {
                        "id":  57,
                        "side":  "buy",
                        "volume":  0.33,
                        "openTime":  "2023.03.13 09:36:40",
-                       "closeTime":  "2023.03.13 14:45:40",
+                       "closeTime":  "2023.03.15 11:33:40",
                        "openPrice":  1891.62,
-                       "closePrice":  1911.19,
-                       "profit":  6463.76,
-                       "balance":  110068.39,
+                       "closePrice":  1918.48,
+                       "profit":  878.06,
+                       "balance":  111511.18,
                        "comment":  "GPP|B2",
                        "commission":  0,
-                       "swap":  0
+                       "swap":  -8.32
                    }
                ]
 }

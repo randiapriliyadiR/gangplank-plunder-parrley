@@ -15,12 +15,12 @@ Interactive backtest explorer on **Exness Pro** ticks (`XAUUSD_ExnessPro`). Lab 
 
 | Stand | Mode | Net | PF | Equity DD | WR | Trades |
 |---|---|---:|---:|---:|---:|---:|
-| **Prop PASS (H4)** | Challenge 3%/10% → +10% | **+$10,068** | **1.81** | **5.8%** | **54%** | **28** |
+| **Prop H4 full** | H4 risk 1%, full curve | **+$13,754** | **1.87** | **5.8%** | — | **35** |
 | Fixed D1 | Full run, no prop halt | +$160,732 | 2.91 | 27.1% | 71% | 14 |
 | BEP D1 | Break-even on next rung | +$126,320 | 2.67 | 36.0% | 62% | 13 |
 | Trail D1 | Trail to next rung SL | +$122,359 | 2.57 | 37.2% | 62% | 13 |
 
-**Prop PASS** halted at **+$10% on 2023.03.13** without breaching daily 3% or max 10% (risk 1%, H4, Model 1 OHLC). Preset: [`Presets/GPP_XAU_H4_PropPass.set`](Presets/GPP_XAU_H4_PropPass.set).
+Lab **Prop** stand is the **full H4 risk-1% curve** (not cut at +10%). On a strict challenge run, **+10% first hit 2023.03.13** (~$110,068) without breaching daily 3% / max 10%. Empty months = no filled breakout that month (selective H4 box setup). Preset: [`Presets/GPP_XAU_H4_PropPass.set`](Presets/GPP_XAU_H4_PropPass.set).
 
 ## What it is
 

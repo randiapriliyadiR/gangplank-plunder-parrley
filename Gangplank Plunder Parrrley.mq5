@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Randi Apriliyadi"
 #property link      "https://github.com/randiapriliyadiR"
-#property version   "1.12"
+#property version   "1.13"
 #property strict
 #property description "Gangplank Plunder Parrrley — H4 box breakout + prop challenge"
 
@@ -53,7 +53,8 @@ input int             InpMaxPos            = 24;         // Max positions
 input ulong           InpMagic             = 26083001;   // Magic number
 
 input group "=== Prop firm challenge ==="
-input bool            InpPropChallenge     = true;       // Race: +target vs daily/max DD
+input bool            InpPropChallenge     = true;       // Track daily/max DD + target
+input bool            InpPropHaltOnTarget  = false;      // false=log PASS then keep trading (full report)
 input double          InpPropDailyDdPct    = 3.0;        // Daily DD % from day-start equity
 input double          InpPropMaxDdPct      = 10.0;       // Max DD % from challenge-start equity
 input double          InpPropTargetPct     = 10.0;       // Profit target % from start equity
@@ -107,6 +108,7 @@ bool GppFillCfg(SGppCfg &c)
    c.oneDirection      = InpOneDirection;
    c.lockTemplate      = InpLockTemplate;
    c.propChallenge     = InpPropChallenge;
+   c.propHaltOnTarget  = InpPropHaltOnTarget;
    c.propDailyDdPct    = InpPropDailyDdPct;
    c.propMaxDdPct      = InpPropMaxDdPct;
    c.propTargetPct     = InpPropTargetPct;
@@ -233,6 +235,8 @@ void GppRefreshView(void)
    g_view.seasonOn  = GppIsSeasonMonth(g_cfg, TimeCurrent());
    if(!g_prop.enabled)
       g_view.propStatus = "prop OFF";
+   else if(g_prop.targetLogged && g_prop.state == GPP_PROP_RUNNING)
+      g_view.propStatus = "PASSED target (still trading) | " + g_prop.eventNote;
    else
       g_view.propStatus = GppPropStateName(g_prop.state) +
                           (g_prop.eventNote != "" ? (" | " + g_prop.eventNote) : "");
@@ -274,7 +278,7 @@ int OnInit()
    g_view.reason = "init";
    g_lastD1 = 0;
    GppPropInit(g_cfg.propChallenge, g_cfg.propDailyDdPct,
-               g_cfg.propMaxDdPct, g_cfg.propTargetPct);
+               g_cfg.propMaxDdPct, g_cfg.propTargetPct, g_cfg.propHaltOnTarget);
    EventSetTimer(1);
    GppRebuild();
    GppRefreshView();

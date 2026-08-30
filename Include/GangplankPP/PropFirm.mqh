@@ -19,15 +19,17 @@ enum ENUM_GPP_PROP_STATE
 struct SGppProp
   {
    bool               enabled;
-   double             dailyDdPct;   // e.g. 3
-   double             maxDdPct;     // e.g. 10
-   double             targetPct;    // e.g. 10
-   double             startEquity;  // challenge start (max DD floor)
-   double             dayStartEq;   // equity at day open
-   datetime           dayStamp;     // D1 bar time of current day
+   bool               haltOnTarget; // if false: log PASS then keep trading (full report)
+   double             dailyDdPct;
+   double             maxDdPct;
+   double             targetPct;
+   double             startEquity;
+   double             dayStartEq;
+   datetime           dayStamp;
    ENUM_GPP_PROP_STATE state;
    datetime           eventTime;
    string             eventNote;
+   bool               targetLogged;
   };
 
 SGppProp g_prop;
@@ -91,13 +93,16 @@ void GppPropHalt(const SGppCfg &cfg, const ENUM_GPP_PROP_STATE st, const string 
 void GppPropInit(const bool enabled,
                  const double dailyPct,
                  const double maxPct,
-                 const double targetPct)
+                 const double targetPct,
+                 const bool haltOnTarget)
   {
    ZeroMemory(g_prop);
-   g_prop.enabled    = enabled;
-   g_prop.dailyDdPct = dailyPct;
-   g_prop.maxDdPct   = maxPct;
-   g_prop.targetPct  = targetPct;
+   g_prop.enabled       = enabled;
+   g_prop.haltOnTarget  = haltOnTarget;
+   g_prop.dailyDdPct    = dailyPct;
+   g_prop.maxDdPct      = maxPct;
+   g_prop.targetPct     = targetPct;
+   g_prop.targetLogged  = false;
    if(!enabled)
      {
       g_prop.state = GPP_PROP_OFF;
@@ -111,7 +116,8 @@ void GppPropInit(const bool enabled,
    g_prop.state      = GPP_PROP_RUNNING;
    Print("GPP PROP challenge ON | startEq=", DoubleToString(g_prop.startEquity, 2),
          " daily=", DoubleToString(dailyPct, 2), "% max=", DoubleToString(maxPct, 2),
-         "% target=+", DoubleToString(targetPct, 2), "%");
+         "% target=+", DoubleToString(targetPct, 2),
+         "% haltOnTarget=", (haltOnTarget ? "yes" : "no"));
   }
 
 // Returns true if trading allowed.
@@ -164,16 +170,23 @@ void GppPropOnTick(const SGppCfg &cfg)
         }
      }
 
-   // Target profit first.
-   if(g_prop.targetPct > 0.0 && g_prop.startEquity > 0.0)
+   // Target: log first hit; optionally halt (lab usually continues for full curve).
+   if(g_prop.targetPct > 0.0 && g_prop.startEquity > 0.0 && !g_prop.targetLogged)
      {
       const double targetEq = g_prop.startEquity * (1.0 + g_prop.targetPct / 100.0);
       if(eq >= targetEq)
         {
-         GppPropHalt(cfg, GPP_PROP_PASS,
-                     StringFormat("target +%.2f%% hit eq=%.2f need=%.2f",
-                                  g_prop.targetPct, eq, targetEq));
-         return;
+         g_prop.targetLogged = true;
+         g_prop.eventTime = TimeCurrent();
+         g_prop.eventNote = StringFormat("target +%.2f%% hit eq=%.2f need=%.2f",
+                                         g_prop.targetPct, eq, targetEq);
+         Print("GPP PROP PASS +target | ", g_prop.eventNote,
+               " | halt=", (g_prop.haltOnTarget ? "yes" : "no (continue)"));
+         if(g_prop.haltOnTarget)
+           {
+            GppPropHalt(cfg, GPP_PROP_PASS, g_prop.eventNote);
+            return;
+           }
         }
      }
   }

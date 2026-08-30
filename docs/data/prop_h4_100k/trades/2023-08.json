@@ -1,0 +1,18 @@
+{
+    "trades":  [
+                   {
+                       "id":  59,
+                       "side":  "sell",
+                       "volume":  0.54,
+                       "openTime":  "2023.08.16 19:39:20",
+                       "closeTime":  "2023.08.23 13:45:40",
+                       "openPrice":  1892.65,
+                       "closePrice":  1913.09,
+                       "profit":  -1121.13,
+                       "balance":  110390.05,
+                       "comment":  "GPP|S1",
+                       "commission":  0,
+                       "swap":  -17.37
+                   }
+               ]
+}
